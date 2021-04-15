@@ -20,7 +20,7 @@ function getRange(ratings) {
 }
 
 function evaluateLastMatchDateNorm(playerId1, playerId2, lastMatches) {
-    console.log(playerId1, playerId2);
+    // console.log(playerId1, playerId2);
     const msSince = Date.now() - lastMatches.get(playerId1).get(playerId2);
     return msSince > MAX_MS ? 0 : (1 - msSince / MAX_MS);  
 }

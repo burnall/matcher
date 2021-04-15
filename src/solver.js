@@ -10,7 +10,7 @@ export function solve(getWeight, canPlay, playerIds) {
     return combs.reduce(
         ({min, best}, comb) => {
             const v = evaluate(getWeight, canPlay, comb);
-            console.log(comb, v);
+            // console.log(comb, v);
             return v < min ? {min: v, best: comb} : {min, best};
         },
         {min: Infinity});
@@ -34,7 +34,7 @@ function perms(xs) {
 
 function evaluate(getWeight, canPlay, comb) {
     let weight = 0;
-    for (let i = 0; i < comb.length / 2; i++) {
+    for (let i = 0; i < comb.length; i++) {
         const [id1, id2] = comb[i];
         if (!canPlay(id1, id2)) {
             return Infinity;
