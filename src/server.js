@@ -4,7 +4,7 @@ import {execute} from './main.js';
 
 polka()
     .use(bodyParser.json())
-    .post('/test', async (req, res) => {
+    .post('/match', async (req, res) => {
         const solution = await execute(req.body.playerIds);
         res.end(JSON.stringify(solution));
     })
