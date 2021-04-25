@@ -8,7 +8,9 @@ import {solve} from './solver.js';
 
 export async function execute(playerIds) {
     const {ratings, lastMatchDates} = await loadData(playerIds);
-    // console.log(lastMatchData);
+    if (ratings.size !== playerIds.length) {
+        throw `Some players have no ratings. Ratings: ${mapToString(ratings)}, player IDs: ${playerIds}`;
+    }
 
     const converter = getConverter({ratings, lastMatchDates}, {
         canPlayFormula: (player1, player2) => Math.abs(player1.rating - player2.rating) < 200,
@@ -16,8 +18,20 @@ export async function execute(playerIds) {
     });
     // console.log(converter.canPlay(1, 15));
     // console.log(converter.getWeight(2, 16));
+    const {min, best} = solve(converter.getWeight, converter.canPlay, playerIds);
 
-    return solve(converter.getWeight, converter.canPlay, playerIds);
+    // Sort by the total rating of the pair, descendent
+    const sortedBest = best && best
+        .sort(([id1, id2], [id3, id4]) => ratings.get(id3) + ratings.get(id4) - ratings.get(id1) - ratings.get(id2));
+    return {
+        min,
+        best: sortedBest,
+    };
 }
 
-
+function mapToString(m) {
+    const pairs = [...m.keys()]
+        .map(key => `${key}: ${m.get(key)}`)
+        .join(', ');
+    return `{${pairs}}`;
+}
