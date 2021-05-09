@@ -1,19 +1,23 @@
 /**
- * @param getWeight {function} (playerId1, playerId2) -> number  
+ * @param getWeight {function} (playerId1, playerId2) -> number
  * @param canPlay {function} (playerId1, playerId2) -> boolean
  * @param playerIds {array}
  *
  * @return solution, minimizing weights
  */
-export function solve(getWeight, canPlay, playerIds) {
+import {PrioQueue} from "./prio-queue.js";
+
+export function solve(getWeight, canPlay, playerIds, nBest) {
     const combs = perms(playerIds);
-    return combs.reduce(
-        ({min, best}, comb) => {
-            const v = evaluate(getWeight, canPlay, comb);
-            // console.log(comb, v);
-            return v < min ? {min: v, best: comb} : {min, best};
+    const evaluateComb = evaluate.bind(null, getWeight, canPlay);
+    const prioQueue = combs.reduce(
+        (prioQ, comb) => {
+            prioQ.add({cost: evaluateComb(comb), comb: comb});
+            return prioQ;
         },
-        {min: Infinity});
+        new PrioQueue(nBest, elem => elem.cost));
+
+    return prioQueue.get();
 }
 
 function perms(xs) {
