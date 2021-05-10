@@ -3,17 +3,30 @@ import mysql from 'mysql2/promise';
 const options = {
     host: 'localhost',
     user: 'root',
-    database: 'stegen',
+    database: 'stegenMay9',
 };
 
 export async function run(playerIds) {
     const conn = await mysql.createConnection(options);
+    const players = await getPlayersInfo(conn, playerIds, ['nameShort']);
     const ratings = await getRatings(conn, playerIds);
     const lastMatchDates = await getLastMatchDates(conn, playerIds);
     await conn.end();
-    return {ratings, lastMatchDates};
+    return {players, ratings, lastMatchDates};
 }
 
+async function getPlayersInfo(conn, playerIds, fields) {
+    const sql = `select id, ${fields.join(' ')} 
+                 from Player
+                 where id IN (?)`;
+    const [rows] = await conn.query(sql, [playerIds]);
+    return rows.reduce(
+        (res, row) => {
+            res.set(row['id'], getFields(row, fields))
+            return res;
+        },
+        new Map());
+}
 async function getRatings(conn, playerIds) {
     let [rows] = await conn.query('select max(id) as maxId from Ranking');
     const maxId = rows[0]['maxId'];
@@ -62,4 +75,13 @@ function getDefaultMap(playerIds) {
         }
     }
     return m;
+}
+
+function getFields(row, fields) {
+    return fields.reduce(
+        (obj, field) => {
+            obj[field] = row[field];
+            return obj;
+        },
+        {});
 }
